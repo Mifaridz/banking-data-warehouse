@@ -1,0 +1,53 @@
+# Python environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Docker artifacts
+docker/
+
+# Local logs and runtime output
+logs/
+*.log
+
+# Airflow / scheduler artifacts
+.dags/
+dags/
+plugins/
+__pycache__/
+airflow.cfg
+airflow.db
+unittests.cfg
+
+# Local data and backup files
+data_source/staging/
+tests/
+
+# Terraform local state and generated files
+terraform/
+
+# Python package init files
+**/__init__.py
+
+# BigQuery loader file
+etl/load/bq_loader.py
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
