@@ -146,18 +146,3 @@ Untuk memverifikasi modul validasi:
 ```bash
 python -m unittest tests.test_validation
 ```
-
-## Catatan
-
-- File sensitif seperti credential, variabel environment, dan state lokal sudah disembunyikan melalui .gitignore.
-- Repository ini juga dilengkapi dengan file Docker Compose untuk pengembangan lebih lanjut, termasuk skenario dengan Airflow.
-
-## Pengembangan Selanjutnya
-
-Beberapa peningkatan yang bisa ditambahkan ke project ini:
-
-- logging yang lebih terstruktur
-- penjadwalan otomatis
-- monitoring dan alerting
-- integrasi dengan cloud data warehouse
-- validasi business rule yang lebih kompleks
