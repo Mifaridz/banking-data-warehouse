@@ -1,0 +1,4 @@
+TransactionID,AccountID,CustomerID,BranchID,TransactionDate,Amount,TransactionType
+23,22,,1,2024-01-22,100000,Withdrawal
+24,23,,1,2024-01-22,300000,Payment
+25,23,,1,2024-01-22,400000,Deposit

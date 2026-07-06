@@ -92,3 +92,5 @@ def load_all_data(transformed_data: dict) -> None:
         print(f"\n[ERROR FATAL] Proses Load Gagal!")
         print(f"[ERROR DETAILED] Pesan: {e}")
         raise e
+    
+    

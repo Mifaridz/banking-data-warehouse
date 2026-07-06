@@ -78,11 +78,15 @@ def main():
         "DimAccount": df_dim_account,
         "FactTransaction": df_fact_transaction
     }
+
+    
     
     # --- 3A. LOAD KE SQL SERVER LOKAL ---
     print("\n>>> Target 1: DWH SQL Server Lokal")
     load_all_data(dict_transformed_data)
     print("Sukses Load ke SQL Server Lokal.")
+
+    
 
     # --- 3B. LOAD KE GOOGLE BIGQUERY ---
     # print("\n>>> Target 2: Google BigQuery (GCP)")

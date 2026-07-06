@@ -30,24 +30,46 @@ def transform_dim_customer(df_customer, df_city, df_state) -> pd.DataFrame:
     return df_dim
 
 def transform_fact_transaction(df_db, df_csv, df_excel, df_account) -> pd.DataFrame:
-    """Menggabungkan 3 sumber transaksi (DB, CSV, Excel) dan menambahkan CustomerID."""
+    """Menggabungkan 3 sumber transaksi (DB, CSV, Excel) dan menambahkan CustomerID dengan aman."""
     print("[TRANSFORM] Memproses FactTransaction...")
 
-    # 1. tUnite: Mengabungkan seluruh data transaksi menjadi satu DataFrame
-    df_unified = pd.concat([df_db, df_csv, df_excel], ignore_index=True)
+    # FIX 1: Standardisasi nama kolom df_db ke snake_case agar sinkron saat concat
+    # Serta lakukan parsing tanggal secara individual sebelum digabungkan
+    df_db_cleaned = df_db.rename(columns={
+        "TransactionID": "transaction_id",
+        "AccountID": "account_id",
+        "TransactionDate": "transaction_date",
+        "Amount": "amount",
+        "TransactionType": "transaction_type",
+        "BranchID": "branch_id"
+    }, errors="ignore")
+    df_db_cleaned["transaction_date"] = pd.to_datetime(df_db_cleaned["transaction_date"]).dt.date
 
-    # 2. tUniq: Menghapus data duplikat
+    # FIX 2: Parsing tanggal CSV (Format ISO: YYYY-MM-DD)
+    df_csv_cleaned = df_csv.copy()
+    df_csv_cleaned["transaction_date"] = pd.to_datetime(df_csv_cleaned["transaction_date"], dayfirst=True).dt.date
+
+    # FIX 3: Parsing tanggal Excel menggunakan dayfirst=True (Format: DD-MM-YYYY)
+    df_excel_cleaned = df_excel.copy()
+    df_excel_cleaned["transaction_date"] = pd.to_datetime(df_excel_cleaned["transaction_date"], dayfirst=True).dt.date
+
+    # 1. tUnite: Sekarang aman untuk menggabungkan seluruh data transaksi
+    df_unified = pd.concat([df_db_cleaned, df_csv_cleaned, df_excel_cleaned], ignore_index=True)
+
+    # 2. tUniq: Menghapus data duplikat berdasarkan transaction_id yang sudah bersih
     df_clean = df_unified.drop_duplicates(subset=["transaction_id"], keep="first").copy()
 
-    # 3. tMap: Tarik customer_id dari tabel account
-    df_account_lookup = df_account[["account_id", "customer_id"]]
+    # FIX 4: Mencegah Duplikasi Amount! 
+    # Pastikan df_account_lookup unik pada account_id sebelum di-merge
+    df_account_lookup = df_account[["account_id", "customer_id"]].drop_duplicates(subset=["account_id"], keep="first")
+    
+    # 3. tMap: Tarik customer_id dari tabel account secara aman
     df_fact = df_clean.merge(df_account_lookup, on="account_id", how="left")
 
-    # 4. Memastikan format tipe data benar
-    df_fact["transaction_date"] = pd.to_datetime(df_fact["transaction_date"]).dt.date
+    # 4. Memastikan format tipe data nilai benar
     df_fact["amount"] = pd.to_numeric(df_fact["amount"])
 
-    # 5. Rename kolom menjadi PascalCase
+    # 5. Rename kolom menjadi PascalCase untuk target Data Warehouse
     df_fact = df_fact.rename(columns={
         "transaction_id": "TransactionID",
         "account_id": "AccountID",
@@ -60,6 +82,7 @@ def transform_fact_transaction(df_db, df_csv, df_excel, df_account) -> pd.DataFr
     
     target_columns = ["TransactionID", "AccountID", "CustomerID", "BranchID", "TransactionDate", "Amount", "TransactionType"]
     return df_fact[target_columns]
+
 
 def transform_dim_account(df_account) -> pd.DataFrame:
     """Transformasi tabel Account ke PascalCase."""

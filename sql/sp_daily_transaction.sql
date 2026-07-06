@@ -16,7 +16,7 @@ BEGIN
 
     SELECT
         CAST(TransactionDate AS DATE) AS [Date],
-        COUNT(*) AS TotalTransactions,
+        COUNT(TransactionID) AS TotalTransactions,
         SUM(Amount) AS TotalAmount
     FROM dbo.FactTransaction
     WHERE TransactionDate BETWEEN @start_date AND @end_date
