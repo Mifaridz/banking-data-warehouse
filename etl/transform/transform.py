@@ -3,7 +3,7 @@ import pandas as pd
 def transform_dim_customer(df_customer, df_city, df_state) -> pd.DataFrame:
     print("[TRANSFORM] Memproses DimCustomer...")
 
-    # 1. tMap Join: Gabung customer dengan city dan state
+    # 1. Gabung customer dengan city dan state
     df_joined = df_customer.merge(df_city, on="city_id", how="left")
     df_joined = df_joined.merge(df_state, on="state_id", how="left")
 
@@ -11,7 +11,7 @@ def transform_dim_customer(df_customer, df_city, df_state) -> pd.DataFrame:
         "customer_id", "customer_name", "address", "city_name", "state_name", "age", "gender", "email"
     ]].copy()
 
-    # 2. tMap transformation: Uppercase
+    # 2. Ubah semua string menjadi uppercase
     cols_to_upper = ["customer_name", "address", "city_name", "state_name", "gender"]
     for col in cols_to_upper:
         df_dim[col] = df_dim[col].apply(lambda x: str(x).upper() if pd.notna(x) else x)
@@ -30,11 +30,9 @@ def transform_dim_customer(df_customer, df_city, df_state) -> pd.DataFrame:
     return df_dim
 
 def transform_fact_transaction(df_db, df_csv, df_excel, df_account) -> pd.DataFrame:
-    """Menggabungkan 3 sumber transaksi (DB, CSV, Excel) dan menambahkan CustomerID dengan aman."""
     print("[TRANSFORM] Memproses FactTransaction...")
 
-    # FIX 1: Standardisasi nama kolom df_db ke snake_case agar sinkron saat concat
-    # Serta lakukan parsing tanggal secara individual sebelum digabungkan
+    # 1. Standardisasi nama kolom df_db ke snake_case agar sinkron saat concat
     df_db_cleaned = df_db.rename(columns={
         "TransactionID": "transaction_id",
         "AccountID": "account_id",
@@ -45,31 +43,25 @@ def transform_fact_transaction(df_db, df_csv, df_excel, df_account) -> pd.DataFr
     }, errors="ignore")
     df_db_cleaned["transaction_date"] = pd.to_datetime(df_db_cleaned["transaction_date"]).dt.date
 
-    # FIX 2: Parsing tanggal CSV (Format ISO: YYYY-MM-DD)
+    # 2. Parsing tanggal CSV (Format ISO: YYYY-MM-DD)
     df_csv_cleaned = df_csv.copy()
     df_csv_cleaned["transaction_date"] = pd.to_datetime(df_csv_cleaned["transaction_date"], dayfirst=True).dt.date
 
-    # FIX 3: Parsing tanggal Excel menggunakan dayfirst=True (Format: DD-MM-YYYY)
+    # 3. Parsing tanggal Excel menggunakan dayfirst=True (Format: DD-MM-YYYY)
     df_excel_cleaned = df_excel.copy()
     df_excel_cleaned["transaction_date"] = pd.to_datetime(df_excel_cleaned["transaction_date"], dayfirst=True).dt.date
 
-    # 1. tUnite: Sekarang aman untuk menggabungkan seluruh data transaksi
     df_unified = pd.concat([df_db_cleaned, df_csv_cleaned, df_excel_cleaned], ignore_index=True)
-
-    # 2. tUniq: Menghapus data duplikat berdasarkan transaction_id yang sudah bersih
     df_clean = df_unified.drop_duplicates(subset=["transaction_id"], keep="first").copy()
 
-    # FIX 4: Mencegah Duplikasi Amount! 
-    # Pastikan df_account_lookup unik pada account_id sebelum di-merge
+    # 4. Mencegah Duplikasi Amount! 
     df_account_lookup = df_account[["account_id", "customer_id"]].drop_duplicates(subset=["account_id"], keep="first")
     
-    # 3. tMap: Tarik customer_id dari tabel account secara aman
+    # 5. Tarik customer_id dari tabel account
     df_fact = df_clean.merge(df_account_lookup, on="account_id", how="left")
-
-    # 4. Memastikan format tipe data nilai benar
     df_fact["amount"] = pd.to_numeric(df_fact["amount"])
 
-    # 5. Rename kolom menjadi PascalCase untuk target Data Warehouse
+    # 6. Rename kolom menjadi PascalCase
     df_fact = df_fact.rename(columns={
         "transaction_id": "TransactionID",
         "account_id": "AccountID",
@@ -85,7 +77,7 @@ def transform_fact_transaction(df_db, df_csv, df_excel, df_account) -> pd.DataFr
 
 
 def transform_dim_account(df_account) -> pd.DataFrame:
-    """Transformasi tabel Account ke PascalCase."""
+
     print("[TRANSFORM] Memproses DimAccount ke PascalCase...")
     return df_account.rename(columns={
         "account_id": "AccountID",
@@ -97,7 +89,7 @@ def transform_dim_account(df_account) -> pd.DataFrame:
     })
 
 def transform_dim_branch(df_branch) -> pd.DataFrame:
-    """Transformasi tabel Branch ke PascalCase."""
+    
     print("[TRANSFORM] Memproses DimBranch ke PascalCase...")
     return df_branch.rename(columns={
         "branch_id": "BranchID",

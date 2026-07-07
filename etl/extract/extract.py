@@ -49,15 +49,12 @@ def extract_from_excel(file_path: str, sheet_name: str | int = 0) -> pd.DataFram
         print(f"[ERROR] Gagal membaca Excel {file_path}: {e}")
         sys.exit(1)
 
-# ==========================================
 # ORCHESTRATOR 
-# ==========================================
 
 def extract_all_data(csv_path: str, excel_path: str) -> dict:
 
     print("=== MEMULAI PROSES EKSTRAKSI DATA ===")
     
-    # Dictionary untuk menyimpan seluruh dataframe
     extracted_data = {}
 
     # 1. Ekstrak Data Transaksi (3 Source Berbeda)
