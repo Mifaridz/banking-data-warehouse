@@ -1,16 +1,10 @@
 # Python environment
 .venv/
-venv/
-env/
-ENV/
 
 # Python cache and test artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
 
 # Environment variables and secrets
 .env
@@ -25,10 +19,9 @@ logs/
 *.log
 
 # Airflow / scheduler artifacts
-.dags/
 dags/
 plugins/
-__pycache__/
+config/
 airflow.cfg
 airflow.db
 unittests.cfg
@@ -47,7 +40,5 @@ terraform/
 etl/load/bq_loader.py
 
 # Editor and OS files
-.vscode/
-.idea/
 .DS_Store
 Thumbs.db
