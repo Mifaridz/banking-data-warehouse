@@ -21,7 +21,7 @@ logs/
 # Airflow / scheduler artifacts
 dags/
 plugins/
-config/
+etl/config/
 airflow.cfg
 airflow.db
 unittests.cfg
